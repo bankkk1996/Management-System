@@ -642,3 +642,15 @@ export const menu = [
       },
     ],
   };
+
+
+  export const menuLogin = [
+    {
+      id: 1,
+      title: "Maid",
+    },
+    {
+      id: 2,
+      title: "Guest",
+    }
+  ]

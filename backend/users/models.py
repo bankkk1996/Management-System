@@ -1,52 +1,61 @@
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.db.models import PositiveSmallIntegerField
-from django.contrib.auth.models import User
-
-ADMIN = 0
-MAID_SUPERVISOR = 1
-MAID= 2
-TECHNICIAN = 3
-GUEST = 4
-USER_TYPE = (
-    (ADMIN, _('Admin')),
-    (MAID_SUPERVISOR, _('Maid Supervisor')),
-    (MAID, _('MAID')),
-    (TECHNICIAN, _('Technician')),
-    (GUEST, _('Guest')),
-)
-
-# Create your models here.
-# class User(models.Model):
-#     ADMIN = 0
-#     MAID_SUPERVISOR = 1
-#     MAID= 2
-#     TECHNICIAN = 3
-#     GUEST = 4
-#     USER_TYPE = (
-#         (ADMIN, _('Admin')),
-#         (MAID_SUPERVISOR, _('Maid Supervisor')),
-#         (MAID, _('MAID')),
-#         (TECHNICIAN, _('Technician')),
-#         (GUEST, _('Guest')),
-#     )
-
-#     REQUIRED_FIELDS = ['user_type']
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     role = PositiveSmallIntegerField(choices=USER_TYPE)
-
-class Maid(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')])
-    phone_number = models.CharField(max_length=15)
-    address = models.TextField()
-    date_of_birth = models.DateField()
-    id_card_number = models.CharField(max_length=20, unique=True)
-    image = models.ImageField(upload_to='image/maid_images/')
-    job_position = models.CharField(max_length=50)
-    hire_date = models.DateField()
-    salary = models.DecimalField(max_digits=10, decimal_places=2)
-    employment_status = models.CharField(max_length=20, choices=[('working', 'Working'), ('resigned', 'Resigned')])
     
-    def __str__(self):
-        return self.user.get_full_name()
+import os
+
+from django.conf import settings
+from django.contrib.sessions.models import Session
+from django.db.models import CharField, PositiveSmallIntegerField, TextField, Model, ForeignKey, CASCADE, \
+    FileField, DateTimeField, OneToOneField
+from django.contrib.auth.models import AbstractUser, Group
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
+
+
+# According to django's official doc.
+# "it’s highly recommended to set up a custom user model, even if the default User model is sufficient for you".
+
+
+
+class User(AbstractUser):
+    ADMIN = 0
+    MAID= 1
+    TECHNICIAN = 2
+    GUEST = 3
+    USER_TYPE = (
+        (ADMIN, _('Admin')),
+        (MAID, _('MAID')),
+        (TECHNICIAN, _('Technician')),
+        (GUEST, _('Guest')),
+    )
+
+    # A list of the field names that will be prompted for when creating a user
+    # via the createsuperuser management command.
+    REQUIRED_FIELDS = ['user_type']
+
+    user_type = PositiveSmallIntegerField(choices=USER_TYPE, default=ADMIN)
+
+
+
+@receiver(post_save, sender=User)
+def add_to_default_group(sender, **kwargs):
+    user = kwargs["instance"]
+    if kwargs["created"]:
+        group_name = 'Unknown'
+        if user.user_type == User.ADMIN:
+            group_name = 'Admin'
+        elif user.user_type == User.MAID:
+            group_name = 'Maid'
+        elif user.user_type == User.TECHNICIAN:
+            group_name = 'Technician'
+        elif user.user_type == User.GUEST:
+            group_name = 'Guest'
+        group,_new = Group.objects.get_or_create(name=group_name)
+
+        user.groups.add(group)
+
+
+class UserSession(Model):
+    user = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
+    session = OneToOneField(Session, on_delete=CASCADE)
+
+

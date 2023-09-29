@@ -1,66 +1,65 @@
-import Home from "./pages/home/Home"
-import Products from "./pages/products/Products"
-import Users from "./pages/users/Users"
+import Home from "./pages/home/Home";
+import Products from "./pages/products/Products";
+import Users from "./pages/users/Users";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Outlet
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import Menu from "./components/menu/Menu";
 import Footer from "./components/footer/Footer";
 import Login from "./pages/login/Login";
-import './styles/global.scss'
-
+import "./styles/global.scss";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
-
-  const Layout = () =>{
+  const Layout = () => {
     return (
       <div className="main">
-        <Navbar/>
+        <Navbar />
         <div className="container">
           <div className="menuContainer">
-            <Menu/>
+            <Menu />
           </div>
           <div className="contentContainer">
-            <Outlet/>
+            <Outlet />
           </div>
         </div>
-        <Footer/>
+        <Footer />
       </div>
-    )
-  }
+    );
+  };
 
-  const router = createBrowserRouter([
+  const router = createBrowserRouter(
+    
+    [
     {
       path: "/",
-      element: <Layout/>,
-      children:[
+      element: <Layout />,
+      children: [
         {
           path: "/",
-          element: <Home/>
+          element: <Home />,
         },
         {
           path: "/users",
-          element: <Users/>
+          element: <Users />,
         },
         {
           path: "/products",
-          element: <Products/>
+          element: <Products />,
         },
-      ]
+      ],
     },
     {
-      path: '/login',
-      element: <Login/>
-    }
+      path: "/login",
+      element: <Login />,
+    },
   ]);
 
   return (
-    <RouterProvider router={router}/>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

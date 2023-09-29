@@ -38,10 +38,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users'
+    'users',
+    'maids',
+    'technicians',
+    'guests',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_spectacular',
+    'corsheaders'
+    # 'django.contrib.auth',
+    # 'django.contrib.contenttypes',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,6 +60,24 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
+AUTHENTICATION_BACKENDS = [
+    # 'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development (be cautious in production)
+# OR
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",  # Add your React application's origin here
+    # Add other allowed origins if needed
+]
+
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -69,10 +97,24 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
+AUTHENTICATION_CLASSES = (
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 MEDIA_URL = '/image/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'image')
+
+AUTH_USER_MODEL = 'users.User'
 
 
 # Database
